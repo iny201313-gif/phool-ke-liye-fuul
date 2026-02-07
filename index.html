@@ -29,7 +29,6 @@
     z-index: 10;
   }
 
-  /* WATER POT */
   .pot {
     position: absolute;
     top: 25px;
@@ -50,14 +49,13 @@
     color: #a85a7a;
   }
 
-  /* POPUP ON TOP */
   .popup {
     position: fixed;
     inset: 0;
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 9999; /* guaranteed on top */
+    z-index: 9999;
     background: rgba(255,214,232,0.92);
   }
 
@@ -80,7 +78,6 @@
     height: 75vh;
   }
 
-  /* STEM */
   .stem {
     width: 6px;
     height: 200px;
@@ -92,7 +89,6 @@
     z-index: 1;
   }
 
-  /* LEAVES */
   .leaf {
     width: 60px;
     height: 20px;
@@ -108,7 +104,6 @@
   .leaf.right { left: 10px; transform: rotate(30deg) scaleX(0); transform-origin: right center; }
   .leaf.left { right: 10px; }
 
-  /* PETALS */
   .petal {
     width: 100px;
     height: 140px;
@@ -136,31 +131,6 @@
     z-index: 3;
     box-shadow: 0 0 15px rgba(255, 100, 150, 0.5);
     transition: transform 0.5s;
-  }
-
-  /* Floating hearts */
-  .heart, .star {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    opacity: 0.7;
-  }
-  .heart::before, .heart::after { content: ""; position: absolute; width: 15px; height: 15px; border-radius: 50%; }
-  .heart::before { top: -7px; left: 0; }
-  .heart::after { top: 0; left: -7px; }
-  .star {
-    width: 8px;
-    height: 8px;
-    background: #fff0f5;
-    border-radius: 50%;
-    opacity: 0.6;
-  }
-
-  @keyframes floatUp {
-    0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
-    50% { opacity: 1; }
-    100% { transform: translateY(-800px) rotate(360deg); opacity: 0; }
   }
 </style>
 </head>
@@ -192,7 +162,6 @@
   </div>
 </div>
 
-<!-- POPUP OUTSIDE OF ANY TRANSFORMED ELEMENT -->
 <div id="popup" class="popup">
   <div class="popup-content">
     <h2>🌸</h2>
@@ -216,7 +185,8 @@ const music = document.getElementById("bgMusic");
 
 let watering = false;
 let waterCount = 0;
-const maxWater = 13; // needs 13 waters
+const maxWater = 13;
+let popupShown = false;
 
 pot.addEventListener("dragstart", () => { watering = true; music.play(); });
 pot.addEventListener("dragend", () => watering = false);
@@ -229,43 +199,31 @@ document.addEventListener("dragover", (e) => {
   if (e.clientX > rect.left && e.clientX < rect.right &&
       e.clientY > rect.top && e.clientY < rect.bottom) {
 
+    // count watering only when less than maxWater
     if (waterCount < maxWater) waterCount++;
 
-    let bloom = waterCount / maxWater; // 0 to 1 scale
+    let bloom = waterCount / maxWater;
 
-    // petals open
+    // animate petals
     petals.forEach((petal, i) => {
       petal.style.opacity = bloom;
       petal.style.transform = `translate(-50%, -50%) rotate(${[-30,-15,0,15,30][i]}deg) scale(${0.5 + bloom})`;
     });
 
-    // center grows
+    // animate center
     center.style.transform = `translate(-50%, -50%) scale(${bloom})`;
 
-    // leaves appear
+    // animate leaves
     leaves.forEach(leaf => leaf.style.transform = leaf.classList.contains("left") ? `rotate(-30deg) scaleX(${bloom})` : `rotate(30deg) scaleX(${bloom})`);
 
-    // show popup when fully bloomed
-    if (waterCount >= maxWater) {
+    // show popup once when fully bloomed
+    if (waterCount >= maxWater && !popupShown) {
+      popupShown = true;
       setTimeout(() => { popup.style.display = "flex"; }, 200);
     }
   }
 });
-
-// Floating hearts
-for(let i = 0; i < 30; i++){
-  const heart = document.createElement('div'); heart.classList.add('heart');
-  heart.style.left = Math.random()*100 + 'vw';
-  heart.style.bottom = Math.random()*20 + 'px';
-  heart.style.animation = `floatUp ${5+Math.random()*5}s linear infinite`;
-  document.body.appendChild(heart);
-
-  const star = document.createElement('div'); star.classList.add('star');
-  star.style.left = Math.random()*100 + 'vw';
-  star.style.bottom = Math.random()*20 + 'px';
-  star.style.animation = `floatUp ${6+Math.random()*6}s linear infinite`;
-  document.body.appendChild(star);
-}
 </script>
+
 </body>
 </html>
