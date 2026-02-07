@@ -57,7 +57,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 9999; /* guaranteed above everything */
+    z-index: 9999; /* guaranteed on top */
     background: rgba(255,214,232,0.92);
   }
 
@@ -214,8 +214,9 @@ const center = stem.querySelector(".center");
 const popup = document.getElementById("popup");
 const music = document.getElementById("bgMusic");
 
-let bloom = 0;
 let watering = false;
+let waterCount = 0;
+const maxWater = 13; // needs 13 waters
 
 pot.addEventListener("dragstart", () => { watering = true; music.play(); });
 pot.addEventListener("dragend", () => watering = false);
@@ -223,23 +224,30 @@ pot.addEventListener("dragend", () => watering = false);
 document.addEventListener("dragover", (e) => {
   e.preventDefault();
   if (!watering) return;
+
   const rect = stem.getBoundingClientRect();
   if (e.clientX > rect.left && e.clientX < rect.right &&
       e.clientY > rect.top && e.clientY < rect.bottom) {
-    bloom += 0.01;
-    bloom = Math.min(bloom, 1);
 
+    if (waterCount < maxWater) waterCount++;
+
+    let bloom = waterCount / maxWater; // 0 to 1 scale
+
+    // petals open
     petals.forEach((petal, i) => {
       petal.style.opacity = bloom;
       petal.style.transform = `translate(-50%, -50%) rotate(${[-30,-15,0,15,30][i]}deg) scale(${0.5 + bloom})`;
     });
 
+    // center grows
     center.style.transform = `translate(-50%, -50%) scale(${bloom})`;
 
+    // leaves appear
     leaves.forEach(leaf => leaf.style.transform = leaf.classList.contains("left") ? `rotate(-30deg) scaleX(${bloom})` : `rotate(30deg) scaleX(${bloom})`);
 
-    if (bloom >= 1) {
-      setTimeout(() => { popup.style.display = "flex"; }, 200); // popup on top
+    // show popup when fully bloomed
+    if (waterCount >= maxWater) {
+      setTimeout(() => { popup.style.display = "flex"; }, 200);
     }
   }
 });
